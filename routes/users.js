@@ -43,4 +43,9 @@ router.post('/login', async (req, res) => {
   res.sendStatus(200);
 });
 
+router.post('/signup', async (req, res) => {
+  console.log(req.body);
+  res.sendStatus(200);
+});
+
 module.exports = router;
