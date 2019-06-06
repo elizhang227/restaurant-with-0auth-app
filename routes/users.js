@@ -1,4 +1,5 @@
 const express = require('express'),
+    bcrypt = require('bcryptjs'),
     router = express.Router(),
     usersModel = require('../models/users');
 
@@ -44,8 +45,18 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/signup', async (req, res) => {
-  console.log(req.body);
-  res.sendStatus(200);
+  const { first_name, last_name, email, password } = req.body;
+
+  // Salt and hash our password!
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(password, salt);
+
+  // Creates a new user instance, with the sign up information
+  const userInstance = new usersModel(null, first_name, last_name, email, hash);
+
+  userInstance.addUser().then(response => {
+    console.log("response is", response);
+  });
 });
 
 module.exports = router;
