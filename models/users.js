@@ -45,6 +45,7 @@ class Users {
                 select id, first_name, last_name, password
                     from users
                 where email = $1`, [this.email]);
+            console.log(response);
             const isValid = await this.checkPassword(response.password);
             if (!!isValid) {
                 const { first_name, last_name, id } = response;
