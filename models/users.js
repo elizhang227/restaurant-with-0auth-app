@@ -10,6 +10,12 @@ class Users {
         this.password = password;
     }
 
+    async checkPassword(hashedPassword) {
+        // first argument is what the user put in the form
+        // second argument is the hashed password
+        return bcrypt.compareSync(this.password, hashedPassword);
+    }
+
     static async getAllUsers() {
         try {
             const response = await db.any(`select * from users`);
@@ -19,16 +25,33 @@ class Users {
         }
     }
 
-    async addUser() {
+    async createUser() {
         try {
             const response = await db.one(`
             insert into users 
                 (first_name, last_name, email, password) 
             values 
                 ($1, $2, $3, $4)
-            returning id`, [this.first_name, this.last_name, this.email, this.password]);
-            console.log("user was created with id:", response.id);
+            returning id`, [this.first_name, this.last_name, this.email, this.password]); // references $1, $2, $3, $4 $ = interpolation 1,2,3,4 = placeholder
             return response;
+        } catch(err) {
+            return err.message
+        }
+    }
+
+    async login() {
+        try {
+            const response = await db.one(`
+                select id, first_name, last_name, password
+                    from users
+                where email = $1`, [this.email]);
+            const isValid = await this.checkPassword(response.password);
+            if (!!isValid) {
+                const { first_name, last_name, id } = response;
+                return { isValid, first_name, last_name, user_id: id }
+            } else {
+                return { isValid } 
+            };
         } catch(err) {
             return err.message
         }

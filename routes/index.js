@@ -5,7 +5,9 @@ var router = express.Router();
 router.get('/', function(req, res, next) {
   res.render('template', {
     locals: {
-      title: 'Express'
+      title: 'Home page',
+      is_logged_in: req.session.is_logged_in,
+      userName: req.session.first_name
     },
     partials: {
       content: 'partial-index'

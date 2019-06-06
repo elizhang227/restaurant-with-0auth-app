@@ -1,1 +1,5 @@
-<p>This is the index page</p>
+${!!is_logged_in ? `
+    <p>Hello ${userName}</p>
+` : `
+    <p>Hello World!</p>
+`}

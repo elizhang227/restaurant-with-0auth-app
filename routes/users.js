@@ -9,7 +9,8 @@ router.get('/', async (req, res, next) => {
     res.render('template', { 
         locals: {
             title: 'List of Users',
-            usersList: allUsers
+            usersList: allUsers,
+            is_logged_in: req.session.is_logged_in,
         },
         partials : {
             content: 'partial-users'
@@ -20,7 +21,8 @@ router.get('/', async (req, res, next) => {
 router.get('/login', async (req, res, next) => {
   res.render('template', {
     locals: {
-      title: 'Login Page'
+      title: 'Login Page',
+      is_logged_in: req.session.is_logged_in,
     },
     partials: {
       content: 'partial-login-form'
@@ -31,7 +33,8 @@ router.get('/login', async (req, res, next) => {
 router.get('/signup', async (req, res, next) => {
   res.render('template', {
     locals: {
-      title: 'Signup Page'
+      title: 'Signup Page',
+      is_logged_in: req.session.is_logged_in,
     },
     partials: {
       content: 'partial-signup-form'
@@ -39,9 +42,27 @@ router.get('/signup', async (req, res, next) => {
   })
 });
 
+router.get('/logout', async (req, res) => {
+  req.session.destroy();
+  res.redirect('/');
+})
+
 router.post('/login', async (req, res) => {
-  console.log(req.body);
-  res.sendStatus(200);
+  const { email, password } = req.body;
+
+  const userInstance = new usersModel(null, null, null, email, password);
+
+  await userInstance.login().then(response => {
+    req.session.is_logged_in = response.isValid;
+    if (!!response.isValid) {
+      req.session.first_name = response.first_name;
+      req.session.last_name = response.last_name;
+      req.session.user_id = response.user_id;
+      res.redirect('/');
+    } else {
+      res.sendStatus(401);
+    }
+  })
 });
 
 router.post('/signup', async (req, res) => {
@@ -54,7 +75,7 @@ router.post('/signup', async (req, res) => {
   // Creates a new user instance, with the sign up information
   const userInstance = new usersModel(null, first_name, last_name, email, hash);
 
-  userInstance.addUser().then(response => {
+  userInstance.createUser().then(response => {
     console.log("response is", response);
   });
 });
