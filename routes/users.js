@@ -58,7 +58,7 @@ router.post('/login', async (req, res) => {
       req.session.first_name = response.first_name;
       req.session.last_name = response.last_name;
       req.session.user_id = response.user_id;
-      res.redirect('/');
+      res.redirect('/restaurants');
     } else {
       res.sendStatus(401);
     }
@@ -73,11 +73,21 @@ router.post('/signup', async (req, res) => {
   const hash = bcrypt.hashSync(password, salt);
 
   // Creates a new user instance, with the sign up information
+  
   const userInstance = new usersModel(null, first_name, last_name, email, hash);
 
-  userInstance.createUser().then(response => {
-    console.log("response is", response);
-  });
+  let check = await userInstance.emailExists();
+
+  if (typeof check === 'object') {
+    res.redirect('/users/login');
+  } else {
+      await userInstance.createUser().then(response => {
+        console.log("response is", response);
+        res.redirect('/');
+      }) .catch(err => err);
+  }
+
+
 });
 
 module.exports = router;

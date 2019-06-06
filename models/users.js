@@ -58,6 +58,15 @@ class Users {
         }
     }
 
+    async emailExists() {
+        try {
+            const response = await db.one(`select email from users where email = $1`, [this.email]);
+            return response;
+        } catch(err) {
+            return err.message
+        }
+    }
+
 }
 
 module.exports = Users;
